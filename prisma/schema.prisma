@@ -24,10 +24,11 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // relations
-  articles  Article[]
-  comments  Comment[]
-  followers UserFollowing[] @relation("followers")
-  following UserFollowing[] @relation("following")
+  articles         Article[]
+  comments         Comment[]
+  followers        UserFollowing[] @relation("followers")
+  following        UserFollowing[] @relation("following")
+  favoriteArticles Favorite[]
 
   @@map("users")
 }
@@ -40,11 +41,12 @@ model Article {
   body        String
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  authorId    Int      @map("author_id")
 
   //relations
-  authorId Int
-  author   User      @relation(fields: [authorId], references: [id])
-  comments Comment[]
+  author      User       @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  favoritedBy Favorite[]
 
   @@map("articles")
 }
@@ -54,24 +56,36 @@ model Comment {
   body      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  authorId  Int      @map("author_id")
+  articleId Int      @map("article_id")
 
   //relations
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
-  articleId Int
-  article   Article @relation(fields: [articleId], references: [id])
+  author  User    @relation(fields: [authorId], references: [id])
+  article Article @relation(fields: [articleId], references: [id])
 
   @@map("comments")
 }
 
 model UserFollowing {
-  userId     Int
-  followerId Int
+  userId     Int @map("user_id")
+  followerId Int @map("follower_id")
 
   // relations
   user     User @relation(fields: [userId], references: [id], name: "following")
   follower User @relation(fields: [followerId], references: [id], name: "followers")
 
   @@id([userId, followerId])
-  @@map("user_following")
+  @@map("user_followings")
+}
+
+model Favorite {
+  userId    Int @map("user_id")
+  articleId Int @map("article_id")
+
+  // relations
+  user    User    @relation(fields: [userId], references: [id])
+  article Article @relation(fields: [articleId], references: [id])
+
+  @@id([userId, articleId])
+  @@map("favorites")
 }
