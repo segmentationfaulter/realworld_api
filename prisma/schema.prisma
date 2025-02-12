@@ -24,8 +24,10 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // relations
-  articles Article[]
-  comments Comment[]
+  articles  Article[]
+  comments  Comment[]
+  followers UserFollowing[] @relation("followers")
+  following UserFollowing[] @relation("following")
 
   @@map("users")
 }
@@ -60,4 +62,16 @@ model Comment {
   article   Article @relation(fields: [articleId], references: [id])
 
   @@map("comments")
+}
+
+model UserFollowing {
+  userId     Int
+  followerId Int
+
+  // relations
+  user     User @relation(fields: [userId], references: [id], name: "following")
+  follower User @relation(fields: [followerId], references: [id], name: "followers")
+
+  @@id([userId, followerId])
+  @@map("user_following")
 }
