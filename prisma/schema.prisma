@@ -19,15 +19,15 @@ model User {
   email     String   @unique
   password  String
   bio       String?
-  image     Bytes?
+  image     String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // relations
   articles         Article[]
   comments         Comment[]
-  followers        UserFollowing[] @relation("followers")
-  following        UserFollowing[] @relation("following")
+  followers        UserFollower[] @relation("following")
+  following        UserFollower[] @relation("followers")
   favoriteArticles Favorite[]
 
   @@map("users")
@@ -47,6 +47,7 @@ model Article {
   author      User       @relation(fields: [authorId], references: [id])
   comments    Comment[]
   favoritedBy Favorite[]
+  tags        Tag[]
 
   @@map("articles")
 }
@@ -66,16 +67,16 @@ model Comment {
   @@map("comments")
 }
 
-model UserFollowing {
+model UserFollower {
   userId     Int @map("user_id")
   followerId Int @map("follower_id")
 
   // relations
-  user     User @relation(fields: [userId], references: [id], name: "following")
-  follower User @relation(fields: [followerId], references: [id], name: "followers")
+  user     User @relation(fields: [userId], references: [id], name: "followers")
+  follower User @relation(fields: [followerId], references: [id], name: "following")
 
   @@id([userId, followerId])
-  @@map("user_followings")
+  @@map("user_followers")
 }
 
 model Favorite {
@@ -88,4 +89,14 @@ model Favorite {
 
   @@id([userId, articleId])
   @@map("favorites")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // relations
+  articles Article[]
+
+  @@map("tags")
 }
