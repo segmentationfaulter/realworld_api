@@ -5,20 +5,23 @@
   "license": "ISC",
   "author": "Muhammad Saqib",
   "type": "module",
-  "main": "app.ts",
+  "main": "src/app.ts",
   "engines": {
     "node": ">=23.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pm2 start src/app.ts --watch",
+    "logs": "pm2 logs"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
     "dotenv": "^16.4.7",
-    "express": "^5.0.1"
+    "express": "^5.0.1",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "pm2": "^5.4.3",
     "prisma": "^6.3.1"
   }
 }
