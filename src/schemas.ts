@@ -7,3 +7,8 @@ export const User = z.object({
   bio: z.string().optional(),
   image: z.string().optional(),
 });
+
+export const LoginCredentials = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
