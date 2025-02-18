@@ -7,6 +7,7 @@ import { prisma } from "../lib/prisma.ts";
 import { LoginCredentials, RegisterationRequestBody } from "../schemas.ts";
 import { ZodError } from "zod";
 import { SALT_ROUNDS } from "../config/constants.ts";
+import { toUserResponse } from "../lib/util.ts";
 
 export const authRouter = express.Router();
 
@@ -86,8 +87,3 @@ authRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
-
-function toUserResponse(user: User) {
-  const { id, password, createdAt, updatedAt, ...userResponse } = user;
-  return userResponse;
-}
