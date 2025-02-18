@@ -1,21 +1,36 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { Prisma } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 
 import { prisma } from "../lib/prisma.ts";
-import { LoginCredentials, User } from "../schemas.ts";
+import { LoginCredentials, RegisterationRequestBody } from "../schemas.ts";
 import { ZodError } from "zod";
 import { SALT_ROUNDS } from "../config/constants.ts";
 
 export const authRouter = express.Router();
 
-authRouter.post("/register", async (req, res) => {
+authRouter.post("/register", async (req, res, next) => {
   try {
-    const user = User.parse(req.body);
-    const hash = await bcrypt.hash(user.password, SALT_ROUNDS);
-    await prisma.user.create({ data: { ...user, password: hash } });
-    res.sendStatus(201);
+    const reqBody = RegisterationRequestBody.parse(req.body);
+    const hash = await bcrypt.hash(reqBody.password, SALT_ROUNDS);
+    const user = await prisma.user.create({
+      data: { ...reqBody, password: hash },
+    });
+    const userResponse = toUserResponse(user);
+    jwt.sign(
+      userResponse,
+      process.env.JWT_SECRET as string,
+      {},
+      (err, token) => {
+        if (err) {
+          res
+            .status(500)
+            .send("Registeration done, token couldn't be generated");
+        }
+        res.status(201).json({ token, ...userResponse });
+      },
+    );
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(400).json(error.issues);
@@ -28,6 +43,7 @@ authRouter.post("/register", async (req, res) => {
           .json({ error: "User with this email/username already exists" });
       }
     }
+    next(error);
   }
 });
 
@@ -50,14 +66,19 @@ authRouter.post("/login", async (req, res, next) => {
       return;
     }
 
-    const { password, ...rest } = user;
+    const userResponse = toUserResponse(user);
 
-    jwt.sign(rest, process.env.JWT_SECRET as string, {}, (err, token) => {
-      if (err) {
-        res.status(500).send("couldn't generate a token");
-      }
-      res.json({ token });
-    });
+    jwt.sign(
+      userResponse,
+      process.env.JWT_SECRET as string,
+      {},
+      (err, token) => {
+        if (err) {
+          res.status(500).send("couldn't generate a token");
+        }
+        res.json({ token, ...userResponse });
+      },
+    );
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(401).json({ error: "invalid credentials" });
@@ -65,3 +86,8 @@ authRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
+
+function toUserResponse(user: User) {
+  const { id, password, createdAt, updatedAt, ...userResponse } = user;
+  return userResponse;
+}
