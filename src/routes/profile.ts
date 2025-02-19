@@ -25,7 +25,9 @@ profilesRouter
     const user = await prisma.user.findUnique({
       where: { username: req.username },
       select: {
-        ...profileSelect,
+        username: true,
+        bio: true,
+        image: true,
         followers: {
           where: {
             followerId: req.auth?.id,
