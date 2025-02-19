@@ -1,14 +1,7 @@
 import express from "express";
 import { prisma } from "../lib/prisma";
-import { Prisma } from "@prisma/client";
 
 export const profilesRouter = express.Router({ mergeParams: true });
-
-const profileSelect: Prisma.UserSelect = {
-  username: true,
-  bio: true,
-  image: true,
-};
 
 profilesRouter
   .use((req, res, next) => {

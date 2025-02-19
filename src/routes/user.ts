@@ -1,5 +1,4 @@
 import express from "express";
-import { expressjwt as jwt } from "express-jwt";
 import { prisma, userSelectWithoutPassword } from "../lib/prisma";
 import { allowRegisteredUsersOnly } from "../lib/util";
 import { RegisterationRequestBody } from "../schemas";
