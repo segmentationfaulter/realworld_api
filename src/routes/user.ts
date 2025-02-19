@@ -9,7 +9,7 @@ export const userRouter = express.Router();
 
 userRouter
   .use(allowRegisteredUsersOnly)
-  .route("/user")
+  .route("/")
   .get(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.auth?.id } });
     if (!user) {

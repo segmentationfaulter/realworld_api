@@ -7,11 +7,11 @@ import { prisma } from "../lib/prisma.ts";
 import { LoginCredentials, RegisterationRequestBody } from "../schemas.ts";
 import { ZodError } from "zod";
 import { SALT_ROUNDS } from "../config/constants.ts";
-import { toUserResponse } from "../lib/util.ts";
+import { endpoint, toUserResponse } from "../lib/util.ts";
 
 export const authRouter = express.Router();
 
-authRouter.post("/register", async (req, res, next) => {
+authRouter.post(endpoint("register"), async (req, res, next) => {
   try {
     const reqBody = RegisterationRequestBody.parse(req.body);
     const hash = await bcrypt.hash(reqBody.password, SALT_ROUNDS);
@@ -48,7 +48,7 @@ authRouter.post("/register", async (req, res, next) => {
   }
 });
 
-authRouter.post("/login", async (req, res, next) => {
+authRouter.post(endpoint("login"), async (req, res, next) => {
   try {
     const credentials = LoginCredentials.parse(req.body);
     const user = await prisma.user.findUnique({
