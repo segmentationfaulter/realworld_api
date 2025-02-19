@@ -1,14 +1,14 @@
 import express from "express";
 import { expressjwt as jwt } from "express-jwt";
 import { prisma } from "../lib/prisma";
-import { toUserResponse } from "../lib/util";
+import { allowRegisteredUsersOnly, toUserResponse } from "../lib/util";
 import { RegisterationRequestBody } from "../schemas";
 import { ZodError } from "zod";
 
 export const userRouter = express.Router();
 
 userRouter
-  .use(jwt({ secret: process.env.JWT_SECRET as string, algorithms: ["HS256"] }))
+  .use(allowRegisteredUsersOnly)
   .route("/user")
   .get(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.auth?.id } });
