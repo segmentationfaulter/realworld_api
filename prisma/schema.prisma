@@ -26,9 +26,9 @@ model User {
   // relations
   articles         Article[]
   comments         Comment[]
-  followers        UserFollower[] @relation("following")
-  following        UserFollower[] @relation("followers")
   favoriteArticles Favorite[]
+  followers        UserFollower[] @relation("being_followed")
+  following        UserFollower[] @relation("follower")
 
   @@map("users")
 }
@@ -72,8 +72,8 @@ model UserFollower {
   followerId Int @map("follower_id")
 
   // relations
-  user     User @relation(fields: [userId], references: [id], name: "followers")
-  follower User @relation(fields: [followerId], references: [id], name: "following")
+  user     User @relation(fields: [userId], references: [id], name: "being_followed")
+  follower User @relation(fields: [followerId], references: [id], name: "follower")
 
   @@id([userId, followerId])
   @@map("user_followers")

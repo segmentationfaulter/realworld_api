@@ -1,5 +1,5 @@
 import express from "express";
-import { prisma, userSelectWithoutPassword } from "../lib/prisma";
+import { prisma, userSelect } from "../lib/prisma";
 import { allowRegisteredUsersOnly } from "../lib/util";
 import { RegisterationRequestBody } from "../schemas";
 import { ZodError } from "zod";
@@ -12,7 +12,7 @@ userRouter
   .get(async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: req.auth?.id },
-      select: userSelectWithoutPassword,
+      select: userSelect,
     });
     if (!user) {
       res.sendStatus(404);
@@ -26,7 +26,7 @@ userRouter
       const updatedUser = await prisma.user.update({
         where: { id: req.auth?.id },
         data: reqBody,
-        select: userSelectWithoutPassword,
+        select: userSelect,
       });
 
       if (updatedUser) {

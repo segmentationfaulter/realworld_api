@@ -1,5 +1,6 @@
 import express from "express";
-import { prisma } from "../lib/prisma";
+import { prisma, profileSelect } from "../lib/prisma";
+import { allowRegisteredUsersOnly } from "../lib/util";
 
 export const profilesRouter = express.Router({ mergeParams: true });
 
@@ -13,14 +14,11 @@ profilesRouter
     req.username = username;
     return next();
   })
-  .route("/")
-  .get(async (req, res) => {
+  .get("/", async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { username: req.username },
       select: {
-        username: true,
-        bio: true,
-        image: true,
+        ...profileSelect,
         followers: {
           where: {
             followerId: req.auth?.id,
@@ -34,8 +32,32 @@ profilesRouter
       return;
     }
 
-    const following = user?.followers.length;
+    const following = user?.followers.length > 0;
     const { followers, ..._user } = user;
 
     res.json({ ..._user, following: !!following });
+  })
+  .use(allowRegisteredUsersOnly)
+  .route("/follow")
+  .post(async (req, res) => {
+    const user = await prisma.user.findUnique({
+      where: { username: req.username },
+      select: { ...profileSelect, id: true },
+    });
+
+    if (!user) {
+      res.sendStatus(404);
+      return;
+    }
+
+    await prisma.userFollower.create({
+      data: {
+        userId: user.id,
+        followerId: req.auth?.id!,
+      },
+    });
+
+    const { id, ...userMinusId } = user;
+
+    res.json({ ...userMinusId, following: true });
   });
