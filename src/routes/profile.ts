@@ -36,7 +36,11 @@ profilesRouter
 
     if (!user) {
       res.sendStatus(404);
+      return;
     }
 
-    res.json(user);
+    const following = user?.followers.length;
+    const { followers, ..._user } = user;
+
+    res.json({ ..._user, following: !!following });
   });
