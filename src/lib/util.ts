@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-type Endpoint = "login" | "register" | "user" | "profiles";
+type Endpoint = "login" | "register" | "user" | "profiles" | "articles";
 
 export function endpoint(endpoint: Endpoint) {
   const api = "/api";
@@ -16,6 +16,9 @@ export function endpoint(endpoint: Endpoint) {
 
     case "profiles":
       return `${api}/profiles/:username`;
+
+    case "articles":
+      return `${api}/articles`;
 
     default:
       const exhaustiveCheck: never = endpoint;

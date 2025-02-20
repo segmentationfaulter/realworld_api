@@ -16,6 +16,19 @@ export const profileSelect = {
   bio: true,
 } satisfies Prisma.UserSelect;
 
+export const articleSelect = {
+  slug: true,
+  title: true,
+  description: true,
+  body: true,
+  tags: true,
+  createdAt: true,
+  updatedAt: true,
+  author: {
+    select: profileSelect,
+  },
+} satisfies Prisma.ArticleSelect;
+
 export type ProfileResult = Prisma.UserGetPayload<{
   select: typeof profileSelect & {
     followers: {

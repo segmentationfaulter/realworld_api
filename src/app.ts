@@ -1,7 +1,12 @@
 import "dotenv/config";
 import express from "express";
 import { expressjwt as jwt } from "express-jwt";
-import { authRouter, userRouter, profilesRouter } from "./routes";
+import {
+  authRouter,
+  userRouter,
+  profilesRouter,
+  articlesRouter,
+} from "./routes";
 import { endpoint } from "./lib/util";
 
 const app = express();
@@ -18,6 +23,7 @@ app
   .use(authRouter)
   .use(endpoint("user"), userRouter)
   .use(endpoint("profiles"), profilesRouter)
+  .use(endpoint("articles"), articlesRouter)
   .listen(process.env.PORT, () => {
     console.info(`Server listening on port ${process.env.PORT}`);
   });
