@@ -37,16 +37,35 @@ articlesRouter
   .post("/", async (req, res, next) => {
     try {
       const reqBody = ArticleRequestBody.parse(req.body);
-      const article = await prisma.article.create({
-        data: {
-          ...reqBody,
-          slug: slugger.slug(reqBody.title),
-          authorId: req.auth?.id!,
-        },
-        select: articleSelect,
+      const { tagList, ..._reqBody } = reqBody;
+
+      const article = await prisma.$transaction(async (tx) => {
+        const tags = tagList
+          ? await Promise.all(
+              tagList.map((name) => {
+                return tx.tag.upsert({
+                  where: { name },
+                  create: { name },
+                  update: {},
+                });
+              }),
+            )
+          : [];
+
+        return tx.article.create({
+          data: {
+            ..._reqBody,
+            slug: slugger.slug(reqBody.title),
+            authorId: req.auth?.id!,
+            tags: {
+              connect: tags.map((tag) => ({ id: tag.id })),
+            },
+          },
+          select: articleSelect,
+        });
       });
 
-      res.json(article);
+      res.status(201).json(article);
     } catch (error) {
       if (error instanceof ZodError) {
         res.json(error.issues);
