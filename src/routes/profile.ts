@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma, profileSelect } from "../lib/prisma";
 import { allowRegisteredUsersOnly } from "../lib/util";
+import { Prisma } from "@prisma/client";
 
 export const profilesRouter = express.Router({ mergeParams: true });
 
@@ -39,19 +40,30 @@ profilesRouter
   })
   .use(allowRegisteredUsersOnly)
   .route("/follow")
-  .post(async (req, res) => {
+  .post(async (req, res, next) => {
     if (!req.user) {
       return;
     }
 
-    await prisma.userFollower.create({
-      data: {
-        userId: req.user.id,
-        followerId: req.auth?.id!,
-      },
-    });
+    try {
+      await prisma.userFollower.create({
+        data: {
+          userId: req.user.id,
+          followerId: req.auth?.id!,
+        },
+      });
 
-    const { id, followers, ..._user } = req.user;
+      const { id, followers, ..._user } = req.user;
 
-    res.json({ ..._user, following: true });
+      res.json({ ..._user, following: true });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === "P2002") {
+          res
+            .status(400)
+            .json({ error: "You are already following this profile" });
+        }
+      }
+      next(err);
+    }
   });
