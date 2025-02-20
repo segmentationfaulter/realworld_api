@@ -5,59 +5,53 @@ import { allowRegisteredUsersOnly } from "../lib/util";
 export const profilesRouter = express.Router({ mergeParams: true });
 
 profilesRouter
-  .use((req, res, next) => {
+  .use(async (req, res, next) => {
     const username = req.params?.username;
 
     if (!username) {
       res.status(400).send("username parameter must be specified");
     }
-    req.username = username;
-    return next();
-  })
-  .get("/", async (req, res) => {
+
+    const followerSelect = req.auth?.id
+      ? { followers: { where: { followerId: req.auth.id } } }
+      : null;
+
     const user = await prisma.user.findUnique({
-      where: { username: req.username },
+      where: { username },
       select: {
         ...profileSelect,
-        followers: {
-          where: {
-            followerId: req.auth?.id,
-          },
-        },
+        ...followerSelect,
       },
     });
 
     if (!user) {
       res.sendStatus(404);
-      return;
     }
-
-    const following = user?.followers.length > 0;
-    const { followers, ..._user } = user;
+    req.user = user;
+    return next();
+  })
+  .get("/", async (req, res) => {
+    if (!req.user) return;
+    const following = req.user?.followers?.length;
+    const { followers, id, ..._user } = req.user;
 
     res.json({ ..._user, following: !!following });
   })
   .use(allowRegisteredUsersOnly)
   .route("/follow")
   .post(async (req, res) => {
-    const user = await prisma.user.findUnique({
-      where: { username: req.username },
-      select: { ...profileSelect, id: true },
-    });
-
-    if (!user) {
-      res.sendStatus(404);
+    if (!req.user) {
       return;
     }
 
     await prisma.userFollower.create({
       data: {
-        userId: user.id,
+        userId: req.user.id,
         followerId: req.auth?.id!,
       },
     });
 
-    const { id, ...userMinusId } = user;
+    const { id, followers, ..._user } = req.user;
 
-    res.json({ ...userMinusId, following: true });
+    res.json({ ..._user, following: true });
   });

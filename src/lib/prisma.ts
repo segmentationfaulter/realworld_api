@@ -10,7 +10,18 @@ export const userSelect = {
 } satisfies Prisma.UserSelect;
 
 export const profileSelect = {
+  id: true,
   username: true,
   image: true,
   bio: true,
 } satisfies Prisma.UserSelect;
+
+export type ProfileResult = Prisma.UserGetPayload<{
+  select: typeof profileSelect & {
+    followers: {
+      where: {
+        followerId: number | undefined;
+      };
+    };
+  };
+}>;

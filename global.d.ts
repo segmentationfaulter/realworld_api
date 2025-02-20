@@ -1,7 +1,10 @@
+import { User } from "@prisma/client";
+import { ProfileResult } from "./src/lib/prisma";
+
 declare global {
   namespace Express {
     interface Request {
-      username?: string;
+      user?: ProfileResult | null;
       auth?: {
         id: number;
       };
