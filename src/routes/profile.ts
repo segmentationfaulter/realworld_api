@@ -66,4 +66,22 @@ profilesRouter
       }
       next(err);
     }
+  })
+  .delete(async (req, res) => {
+    if (!req.user?.id || !req.auth?.id) {
+      res.sendStatus(400);
+      return;
+    }
+
+    await prisma.userFollower.delete({
+      where: {
+        userId_followerId: {
+          userId: req.user.id,
+          followerId: req.auth.id,
+        },
+      },
+    });
+
+    const { followers, id, ..._user } = req.user;
+    res.json({ following: false, ..._user });
   });
