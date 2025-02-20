@@ -17,7 +17,7 @@ authRouter.post(endpoint("register"), async (req, res, next) => {
     const hash = await bcrypt.hash(reqBody.password, SALT_ROUNDS);
     const user = await prisma.user.create({
       data: { ...reqBody, password: hash },
-      select: userSelect,
+      select: { id: true, ...userSelect },
     });
     jwt.sign(user, process.env.JWT_SECRET as string, {}, (err, token) => {
       if (err) {
@@ -46,7 +46,7 @@ authRouter.post(endpoint("login"), async (req, res, next) => {
     const credentials = LoginCredentials.parse(req.body);
     const user = await prisma.user.findUnique({
       where: { email: credentials.email },
-      select: { password: true, ...userSelect },
+      select: { password: true, id: true, ...userSelect },
     });
 
     if (!user) {

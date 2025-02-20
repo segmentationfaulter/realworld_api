@@ -19,3 +19,9 @@ export const ArticleRequestBody = z.object({
   body: z.string().nonempty(),
   tagList: z.array(z.string()).optional(),
 });
+
+export const ArticleQueryParams = z.object({
+  tag: z.string(),
+  author: z.string(),
+  favorited: z.string(),
+});
