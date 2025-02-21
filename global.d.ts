@@ -8,6 +8,7 @@ declare global {
       auth?: {
         id: number;
       };
+      articleId?: number;
     }
   }
 }

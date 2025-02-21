@@ -80,12 +80,12 @@ model UserFollower {
 }
 
 model Favorite {
-  userId    Int @map("user_id")
   articleId Int @map("article_id")
+  userId    Int @map("user_id")
 
   // relations
-  user    User    @relation(fields: [userId], references: [id])
   article Article @relation(fields: [articleId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 
   @@id([userId, articleId])
   @@map("favorites")

@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-
-type Endpoint = "login" | "register" | "user" | "profiles" | "articles";
+import { Endpoint } from "../types";
 
 export function endpoint(endpoint: Endpoint) {
   const api = "/api";
