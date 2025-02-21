@@ -4,15 +4,17 @@ import { allowRegisteredUsersOnly } from "../lib/util";
 import { articleSelect, prisma } from "../lib/prisma";
 import { ArticleQueryParams, ArticleRequestBody } from "../schemas";
 import { ZodError } from "zod";
-import { Prisma } from "@prisma/client";
 
 export const articlesRouter = express.Router();
 const slugger = new Slugger();
 
 articlesRouter
   .get("/", async (req, res) => {
-    const { author: username } = ArticleQueryParams.partial().parse(req.query);
+    const { author: username, tags } = ArticleQueryParams.partial().parse(
+      req.query,
+    );
     let authorId: number | undefined;
+    const tagsList = tags?.split(",");
 
     if (username) {
       authorId = (
@@ -25,7 +27,20 @@ articlesRouter
 
     const articles = await prisma.article.findMany({
       select: articleSelect,
-      where: { authorId },
+      where: {
+        ...(authorId ? { authorId } : {}),
+        ...(tagsList?.length
+          ? {
+              tags: {
+                some: {
+                  name: {
+                    in: tagsList,
+                  },
+                },
+              },
+            }
+          : {}),
+      },
       orderBy: {
         createdAt: "desc",
       },

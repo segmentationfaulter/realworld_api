@@ -21,7 +21,7 @@ export const ArticleRequestBody = z.object({
 });
 
 export const ArticleQueryParams = z.object({
-  tag: z.string(),
+  tags: z.string(),
   author: z.string(),
   favorited: z.string(),
 });
