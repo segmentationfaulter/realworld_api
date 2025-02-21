@@ -4,7 +4,11 @@ import { allowRegisteredUsersOnly } from "../lib/util";
 import { articleSelect, prisma } from "../lib/prisma";
 import { ArticleQueryParams, ArticleRequestBody } from "../schemas";
 import { ZodError } from "zod";
-import { hasArticleIdLoaded, isAuthenticated } from "../types";
+import {
+  hasArticleIdLoaded,
+  isAuthenticated,
+  isNotNullOrUndefined,
+} from "../types";
 
 export const articlesRouter = express.Router();
 const slugger = new Slugger();
@@ -25,11 +29,16 @@ articlesRouter
     const {
       author: username,
       tags,
+      favorited,
       offset,
       limit,
     } = ArticleQueryParams.partial().parse(req.query);
     let authorId: number | undefined;
-    const tagsList = tags?.split(",");
+    let favoritedByIds: number[] = [];
+    const tagsList = tags?.split(",").map((tag) => tag.trim());
+    const favoritedBy = favorited
+      ?.split(",")
+      .map((username) => username.trim());
 
     if (username) {
       authorId = (
@@ -38,6 +47,21 @@ articlesRouter
           select: { id: true },
         })
       )?.id;
+    }
+
+    if (favoritedBy?.length) {
+      favoritedByIds = (
+        await Promise.all(
+          favoritedBy.map((username) => {
+            return prisma.user.findUnique({
+              where: { username },
+              select: { id: true },
+            });
+          }),
+        )
+      )
+        .map((user) => user?.id)
+        .filter(isNotNullOrUndefined);
     }
 
     const articles = await prisma.article.findMany({
@@ -50,6 +74,17 @@ articlesRouter
                 some: {
                   name: {
                     in: tagsList,
+                  },
+                },
+              },
+            }
+          : {}),
+        ...(favoritedByIds.length
+          ? {
+              favoritedBy: {
+                some: {
+                  userId: {
+                    in: favoritedByIds,
                   },
                 },
               },

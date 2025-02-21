@@ -18,3 +18,7 @@ export function isAuthenticated(req: Request): req is Authenticated {
 export function hasArticleIdLoaded(req: Request): req is ArticleIdLoaded {
   return !!req.articleId;
 }
+
+export function isNotNullOrUndefined<T>(val: T | null | undefined): val is T {
+  return val !== null && val !== undefined;
+}
