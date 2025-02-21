@@ -10,9 +10,12 @@ const slugger = new Slugger();
 
 articlesRouter
   .get("/", async (req, res) => {
-    const { author: username, tags } = ArticleQueryParams.partial().parse(
-      req.query,
-    );
+    const {
+      author: username,
+      tags,
+      offset,
+      limit,
+    } = ArticleQueryParams.partial().parse(req.query);
     let authorId: number | undefined;
     const tagsList = tags?.split(",");
 
@@ -44,6 +47,8 @@ articlesRouter
       orderBy: {
         createdAt: "desc",
       },
+      skip: offset ?? 0,
+      take: limit ?? 20,
     });
 
     res.json(articles);

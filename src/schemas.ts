@@ -24,4 +24,6 @@ export const ArticleQueryParams = z.object({
   tags: z.string(),
   author: z.string(),
   favorited: z.string(),
+  offset: z.number(),
+  limit: z.number(),
 });
