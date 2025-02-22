@@ -10,6 +10,31 @@ export const articlesRouter = express.Router();
 const slugger = new Slugger();
 
 articlesRouter
+  .get("/feed", allowRegisteredUsersOnly, async (req, res) => {
+    if (!isAuthenticated(req)) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const following = (
+      await prisma.userFollower.findMany({
+        where: {
+          followerId: req.auth.id,
+        },
+      })
+    ).map((record) => record.userId);
+
+    const articles = await prisma.article.findMany({
+      where: {
+        authorId: {
+          in: following,
+        },
+      },
+      select: articleSelect,
+    });
+
+    res.json(articles);
+  })
   .param("slug", async (req, res, next, slug) => {
     const article = await prisma.article.findUnique({
       where: { slug },
