@@ -6,6 +6,7 @@ import {
   ArticleQueryParams,
   ArticleRequestBody,
   ArticleUpdateBody,
+  CommentRequestBody,
 } from "../schemas";
 import { ZodError } from "zod";
 import { isAuthenticated, isNotNullOrUndefined } from "../types";
@@ -142,6 +143,20 @@ articlesRouter
 
     res.json(articles);
   })
+  .get("/:slug/comments", async (req, res) => {
+    if (!req.article) {
+      res.sendStatus(404);
+      return;
+    }
+
+    const comments = await prisma.comment.findMany({
+      where: {
+        articleId: req.article.id,
+      },
+    });
+
+    res.json(comments);
+  })
   .use(allowRegisteredUsersOnly)
   .put("/:slug", async (req, res, next) => {
     try {
@@ -268,5 +283,58 @@ articlesRouter
       },
     });
 
+    res.sendStatus(204);
+  })
+  .post("/:slug/comments", async (req, res) => {
+    try {
+      if (!req.auth?.id || !req.article) {
+        res.sendStatus(400);
+        return;
+      }
+      const body = CommentRequestBody.parse(req.body);
+
+      const comment = await prisma.comment.create({
+        data: {
+          authorId: req.auth.id,
+          articleId: req.article.id,
+          ...body,
+        },
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json(error.issues);
+      }
+    }
+  })
+  .delete("/:slug/comments/:id", async (req, res) => {
+    if (!isAuthenticated(req)) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const commentId = parseInt(req.params.id);
+
+    if (Number.isNaN(commentId)) {
+      res.status(400).send("comment id can only be a number");
+      return;
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment) {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (comment.authorId !== req.auth.id) {
+      res.sendStatus(403);
+      return;
+    }
+
+    await prisma.comment.delete({ where: { id: commentId } });
     res.sendStatus(204);
   });

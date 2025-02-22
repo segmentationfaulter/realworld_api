@@ -34,3 +34,7 @@ export const ArticleQueryParams = z.object({
   offset: z.number(),
   limit: z.number(),
 });
+
+export const CommentRequestBody = z.object({
+  body: z.string().nonempty(),
+});
