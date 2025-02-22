@@ -1,14 +1,10 @@
-import express, { Request } from "express";
+import express from "express";
 import Slugger from "github-slugger";
 import { allowRegisteredUsersOnly } from "../lib/util";
 import { articleSelect, prisma } from "../lib/prisma";
 import { ArticleQueryParams, ArticleRequestBody } from "../schemas";
 import { ZodError } from "zod";
-import {
-  hasArticleIdLoaded,
-  isAuthenticated,
-  isNotNullOrUndefined,
-} from "../types";
+import { isAuthenticated, isNotNullOrUndefined } from "../types";
 
 export const articlesRouter = express.Router();
 const slugger = new Slugger();
@@ -17,11 +13,13 @@ articlesRouter
   .param("slug", async (req, res, next, slug) => {
     const article = await prisma.article.findUnique({
       where: { slug },
-      select: { id: true },
+      select: {
+        ...articleSelect,
+      },
     });
 
     if (article) {
-      req.articleId = article.id;
+      req.article = article;
     }
     next();
   })
@@ -141,14 +139,14 @@ articlesRouter
     }
   })
   .post("/:slug/favorite", async (req, res) => {
-    if (!isAuthenticated(req) || !hasArticleIdLoaded(req)) {
+    if (!isAuthenticated(req) || !req.article?.id) {
       res.sendStatus(400);
       return;
     }
 
     await prisma.favorite.create({
       data: {
-        articleId: req.articleId,
+        articleId: req.article.id,
         userId: req.auth.id,
       },
     });
@@ -156,7 +154,7 @@ articlesRouter
     res.sendStatus(201);
   })
   .delete("/:slug/favorite", async (req, res) => {
-    if (!isAuthenticated(req) || !hasArticleIdLoaded(req)) {
+    if (!isAuthenticated(req) || !req.article?.id) {
       res.sendStatus(400);
       return;
     }
@@ -165,7 +163,7 @@ articlesRouter
       where: {
         userId_articleId: {
           userId: req.auth.id,
-          articleId: req.articleId,
+          articleId: req.article.id,
         },
       },
     });

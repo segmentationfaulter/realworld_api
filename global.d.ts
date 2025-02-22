@@ -1,16 +1,13 @@
-import { User } from "@prisma/client";
-import { ProfileResult } from "./src/lib/prisma";
+import { ArticleResult, ProfileResult } from "./src/types";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: ProfileResult | null;
+      profile?: ProfileResult | null;
       auth?: {
         id: number;
       };
-      articleId?: number;
+      article?: ArticleResult | null;
     }
   }
 }
-
-export {};

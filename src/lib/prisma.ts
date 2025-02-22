@@ -17,6 +17,7 @@ export const profileSelect = {
 } satisfies Prisma.UserSelect;
 
 export const articleSelect = {
+  id: true,
   slug: true,
   title: true,
   description: true,
@@ -27,14 +28,10 @@ export const articleSelect = {
   author: {
     select: profileSelect,
   },
+  favoritedBy: true,
+  _count: {
+    select: {
+      favoritedBy: true,
+    },
+  },
 } satisfies Prisma.ArticleSelect;
-
-export type ProfileResult = Prisma.UserGetPayload<{
-  select: typeof profileSelect & {
-    followers: {
-      where: {
-        followerId: number | undefined;
-      };
-    };
-  };
-}>;
