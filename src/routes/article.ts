@@ -178,6 +178,23 @@ articlesRouter
       next(error);
     }
   })
+  .delete("/:slug", async (req, res) => {
+    if (
+      !req.auth?.id ||
+      !req.article ||
+      req.article.author.id !== req.auth.id
+    ) {
+      res.sendStatus(400);
+      return;
+    }
+
+    await prisma.article.delete({
+      where: {
+        id: req.article.id,
+      },
+    });
+    res.sendStatus(204);
+  })
   .post("/", async (req, res, next) => {
     try {
       const reqBody = ArticleRequestBody.parse(req.body);
