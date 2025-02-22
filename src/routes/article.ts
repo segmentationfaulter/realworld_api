@@ -23,6 +23,14 @@ articlesRouter
     }
     next();
   })
+  .get("/:slug", (req, res) => {
+    if (!req.article) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.json(req.article);
+  })
   .get("/", async (req, res) => {
     const {
       author: username,
