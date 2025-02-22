@@ -17,7 +17,7 @@ profilesRouter
       ? { followers: { where: { followerId: req.auth.id } } }
       : null;
 
-    const user = await prisma.user.findUnique({
+    const profile = await prisma.user.findUnique({
       where: { username },
       select: {
         ...profileSelect,
@@ -25,37 +25,37 @@ profilesRouter
       },
     });
 
-    if (!user) {
+    if (!profile) {
       res.sendStatus(404);
+      return;
     }
-    req.user = user;
+
+    const { followers, ..._profile } = profile;
+    const following = followers.length > 0;
+    req.profile = { following, ..._profile };
     return next();
   })
   .get("/", async (req, res) => {
-    if (!req.user) return;
-    const following = req.user?.followers?.length;
-    const { followers, id, ..._user } = req.user;
+    if (!req.profile) return;
 
-    res.json({ ..._user, following: !!following });
+    res.json(req.profile);
   })
   .use(allowRegisteredUsersOnly)
   .route("/follow")
   .post(async (req, res, next) => {
-    if (!req.user) {
+    if (!req.profile) {
       return;
     }
 
     try {
       await prisma.userFollower.create({
         data: {
-          userId: req.user.id,
+          userId: req.profile.id,
           followerId: req.auth?.id!,
         },
       });
 
-      const { id, followers, ..._user } = req.user;
-
-      res.json({ ..._user, following: true });
+      res.json({ ...req.profile, following: true });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === "P2002") {
@@ -68,7 +68,7 @@ profilesRouter
     }
   })
   .delete(async (req, res) => {
-    if (!req.user?.id || !req.auth?.id) {
+    if (!req.profile?.id || !req.auth?.id) {
       res.sendStatus(400);
       return;
     }
@@ -76,12 +76,11 @@ profilesRouter
     await prisma.userFollower.delete({
       where: {
         userId_followerId: {
-          userId: req.user.id,
+          userId: req.profile.id,
           followerId: req.auth.id,
         },
       },
     });
 
-    const { followers, id, ..._user } = req.user;
-    res.json({ following: false, ..._user });
+    res.json({ ...req.profile, following: false });
   });
