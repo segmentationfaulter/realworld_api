@@ -1,3 +1,4 @@
+import { slug } from "github-slugger";
 import { z } from "zod";
 
 export const RegisterationRequestBody = z.object({
@@ -19,6 +20,12 @@ export const ArticleRequestBody = z.object({
   body: z.string().nonempty(),
   tagList: z.array(z.string()).optional(),
 });
+
+export const ArticleUpdateBody = ArticleRequestBody.omit({
+  tagList: true,
+})
+  .extend({ slug: z.string() })
+  .partial();
 
 export const ArticleQueryParams = z.object({
   tags: z.string(),

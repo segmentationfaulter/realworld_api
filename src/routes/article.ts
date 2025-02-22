@@ -2,7 +2,11 @@ import express from "express";
 import Slugger from "github-slugger";
 import { allowRegisteredUsersOnly } from "../lib/util";
 import { articleSelect, prisma } from "../lib/prisma";
-import { ArticleQueryParams, ArticleRequestBody } from "../schemas";
+import {
+  ArticleQueryParams,
+  ArticleRequestBody,
+  ArticleUpdateBody,
+} from "../schemas";
 import { ZodError } from "zod";
 import { isAuthenticated, isNotNullOrUndefined } from "../types";
 
@@ -37,9 +41,16 @@ articlesRouter
   })
   .param("slug", async (req, res, next, slug) => {
     const article = await prisma.article.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
       select: {
         ...articleSelect,
+        favoritedBy: {
+          where: {
+            userId: req.auth?.id,
+          },
+        },
       },
     });
 
@@ -132,6 +143,41 @@ articlesRouter
     res.json(articles);
   })
   .use(allowRegisteredUsersOnly)
+  .put("/:slug", async (req, res, next) => {
+    try {
+      if (!req.article) {
+        res.sendStatus(404);
+        return;
+      }
+      if (!isAuthenticated(req) || req.article.author.id !== req.auth.id) {
+        res.sendStatus(401);
+        return;
+      }
+
+      const reqBody = ArticleUpdateBody.parse(req.body);
+      if (reqBody.title) {
+        reqBody.slug = slugger.slug(reqBody.title);
+      }
+
+      if (Object.keys(reqBody).length === 0) {
+        res.sendStatus(400);
+        return;
+      }
+
+      const updatedArticle = await prisma.article.update({
+        where: { id: req.article.id },
+        select: articleSelect,
+        data: reqBody,
+      });
+
+      res.json(updatedArticle);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json(error.issues);
+      }
+      next(error);
+    }
+  })
   .post("/", async (req, res, next) => {
     try {
       const reqBody = ArticleRequestBody.parse(req.body);
@@ -187,7 +233,11 @@ articlesRouter
     res.sendStatus(201);
   })
   .delete("/:slug/favorite", async (req, res) => {
-    if (!isAuthenticated(req) || !req.article?.id) {
+    if (
+      !isAuthenticated(req) ||
+      !req.article?.id ||
+      !req.article.favoritedBy.map((item) => item.userId).includes(req.auth.id)
+    ) {
       res.sendStatus(400);
       return;
     }
