@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { type Request } from "express";
-import { articleSelect, profileSelect } from "./lib/prisma";
+import { articleSelect, profileSelect } from "./lib/prisma.ts";
+
 export type Endpoint = "login" | "register" | "user" | "profiles" | "articles";
 
 interface Authenticated extends Request {

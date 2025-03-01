@@ -1,6 +1,6 @@
 import express from "express";
-import { prisma, profileSelect } from "../lib/prisma";
-import { allowRegisteredUsersOnly } from "../lib/util";
+import { prisma, profileSelect } from "../lib/prisma.ts";
+import { allowRegisteredUsersOnly } from "../lib/util.ts";
 import { Prisma } from "@prisma/client";
 
 export const profilesRouter = express.Router({ mergeParams: true });

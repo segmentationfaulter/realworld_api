@@ -6,8 +6,8 @@ import {
   userRouter,
   profilesRouter,
   articlesRouter,
-} from "./routes";
-import { endpoint } from "./lib/util";
+} from "./routes/index.ts";
+import { endpoint } from "./lib/util.ts";
 
 const app = express();
 

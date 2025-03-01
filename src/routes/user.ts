@@ -1,7 +1,7 @@
 import express from "express";
-import { prisma, userSelect } from "../lib/prisma";
-import { allowRegisteredUsersOnly } from "../lib/util";
-import { RegisterationRequestBody } from "../schemas";
+import { prisma, userSelect } from "../lib/prisma.ts";
+import { allowRegisteredUsersOnly } from "../lib/util.ts";
+import { RegisterationRequestBody } from "../schemas.ts";
 import { ZodError } from "zod";
 
 export const userRouter = express.Router();

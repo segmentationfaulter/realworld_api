@@ -1,4 +1,3 @@
-import { slug } from "github-slugger";
 import { z } from "zod";
 
 export const RegisterationRequestBody = z.object({

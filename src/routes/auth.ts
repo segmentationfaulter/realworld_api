@@ -1,7 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { Prisma, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import { prisma, userSelect } from "../lib/prisma.ts";
 import { LoginCredentials, RegisterationRequestBody } from "../schemas.ts";

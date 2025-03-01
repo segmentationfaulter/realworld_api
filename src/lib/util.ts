@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import { Endpoint } from "../types";
+import type { NextFunction, Request, Response } from "express";
+import { type Endpoint } from "../types.ts";
 
 export function endpoint(endpoint: Endpoint) {
   const api = "/api";

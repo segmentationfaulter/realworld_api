@@ -1,15 +1,15 @@
 import express from "express";
 import Slugger from "github-slugger";
-import { allowRegisteredUsersOnly } from "../lib/util";
-import { articleSelect, prisma } from "../lib/prisma";
+import { allowRegisteredUsersOnly } from "../lib/util.ts";
+import { articleSelect, prisma } from "../lib/prisma.ts";
 import {
   ArticleQueryParams,
   ArticleRequestBody,
   ArticleUpdateBody,
   CommentRequestBody,
-} from "../schemas";
+} from "../schemas.ts";
 import { ZodError } from "zod";
-import { isAuthenticated, isNotNullOrUndefined } from "../types";
+import { isAuthenticated, isNotNullOrUndefined } from "../types.ts";
 
 export const articlesRouter = express.Router();
 const slugger = new Slugger();
