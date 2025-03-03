@@ -1,30 +1,10 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
-
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
-
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker-compose up`.
-
 services:
   server:
     build:
       context: .
-      dockerfile: dev.Dockerfile
-    environment:
-      DATABASE_URL: postgresql://postgres:msii92@db:5432/conduit?schema=public
-      JWT_SECRET: 0mAeEHGpp6fOlwxk+ltzuuApAqNu1ZZX6FS0qKnhkNDNXkHKacqpo81ZwQHtRPGF
+    env_file: .env
     ports:
-      - 3000:3000 # can we use interpolation here?
+      - 3000:3000
 
     depends_on:
       db:
