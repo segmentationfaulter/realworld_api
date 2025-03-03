@@ -1,14 +1,22 @@
 services:
-  server:
+  api:
     build:
       context: .
     env_file: .env
     ports:
       - 3000:3000
-
     depends_on:
       db:
         condition: service_healthy
+    develop:
+      watch:
+        - path: ./src
+          action: sync
+          target: /app/src
+          ignore:
+            - node_modules/
+        - path: package.json
+          action: rebuild
   db:
     image: postgres:17.4
     restart: always
